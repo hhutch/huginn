@@ -22,7 +22,8 @@ else
   gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw]
 end
 
-gem 'mysql2', '~> 0.3.16'
+# gem 'mysql2', '~> 0.3.16'
+gem 'pg'
 gem 'devise', '~> 3.2.4'
 gem 'kaminari', '~> 0.16.1'
 gem 'bootstrap-kaminari-views', '~> 0.0.3'
@@ -76,6 +77,10 @@ gem 'feed-normalizer'
 gem 'slack-notifier', '~> 0.5.0'
 gem 'therubyracer', '~> 0.12.1'
 gem 'mqtt'
+
+gem 'omniauth-fitbit'
+gem 'fitgem'
+gem 'beeminder'
 
 group :development do
   gem 'binding_of_caller'
