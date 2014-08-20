@@ -28,7 +28,7 @@ Huginn::Application.configure do
   config.active_record.mass_assignment_sanitizer = :strict
 
   # Raise an error on page load if there are pending migrations.
-  config.active_record.migration_error = :page_load
+  # config.active_record.migration_error = :page_load
 
   # Expands the lines which load the assets
   config.assets.debug = true

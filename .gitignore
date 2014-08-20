@@ -24,3 +24,7 @@ deployment/cookbooks
 .*un~
 .ruby-gemset
 .ruby-version
+# emacs
+[#]*[#]
+.[#]*
+*~

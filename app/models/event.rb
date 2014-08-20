@@ -11,7 +11,7 @@ class Event < ActiveRecord::Base
 
   acts_as_mappable
 
-  json_serialize :payload
+  # json_serialize :payload
 
   belongs_to :user
   belongs_to :agent, :counter_cache => true, :touch => :last_event_at
