@@ -1,4 +1,5 @@
 require 'net/ftp'
+require 'net/ftp/list'
 require 'uri'
 require 'time'
 
@@ -105,33 +106,14 @@ module Agents
         # commands during iteration.
         list = ftp.list('-a')
 
-        month2year = {}
-
         list.each do |line|
-          mon, day, smtn, rest = line.split(' ', 9)[5..-1]
-
-          # Remove symlink target part if any
-          filename = rest[/\A(.+?)(?:\s+->\s|\z)/, 1]
-
+          entry = Net::FTP::List.parse line
+          filename = entry.basename
+          mtime = Time.parse(entry.mtime.to_s).utc
+          
           patterns.any? { |pattern|
             File.fnmatch?(pattern, filename)
           } or next
-
-          case smtn
-          when /:/
-            if year = month2year[mon]
-              mtime = Time.parse("#{mon} #{day} #{year} #{smtn} GMT")
-            else
-              log "Getting mtime of #{filename}"
-              mtime = ftp.mtime(filename)
-              month2year[mon] = mtime.year
-            end
-          else
-            # Do not bother calling MDTM for old files.  Losing the
-            # time part only makes a timestamp go backwards, meaning
-            # that it will trigger no new event.
-            mtime = Time.parse("#{mon} #{day} #{smtn} GMT")
-          end
 
           after < mtime or next
 
@@ -192,8 +174,8 @@ module Agents
       new_files.sort_by { |filename|
         found_entries[filename]
       }.each { |filename|
-        create_event :payload => {
-          'url' => (base_uri + filename).to_s,
+        create_event payload: {
+          'url' => (base_uri + uri_path_escape(filename)).to_s,
           'filename' => filename,
           'timestamp' => found_entries[filename],
         }
@@ -209,6 +191,14 @@ module Agents
       Integer(value) >= 0
     rescue
       false
+    end
+
+    def uri_path_escape(string)
+      str = string.dup.force_encoding(Encoding::ASCII_8BIT)  # string.b in Ruby >=2.0
+      str.gsub!(/([^A-Za-z0-9\-._~!$&()*+,=@]+)/) { |m|
+        '%' + m.unpack('H2' * m.bytesize).join('%').upcase
+      }
+      str.force_encoding(Encoding::US_ASCII)
     end
   end
 end

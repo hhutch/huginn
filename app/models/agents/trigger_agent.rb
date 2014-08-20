@@ -57,7 +57,7 @@ module Agents
     def receive(incoming_events)
       incoming_events.each do |event|
 
-        opts = interpolated(event.payload)
+        opts = interpolated(event)
 
         match = opts['rules'].all? do |rule|
           value_at_path = Utils.value_at(event['payload'], rule['path'])
@@ -102,7 +102,7 @@ module Agents
     end
 
     def keep_event?
-      interpolated['keep_event'] == 'true'
+      boolify(interpolated['keep_event'])
     end
   end
 end

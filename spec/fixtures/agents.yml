@@ -10,8 +10,8 @@ jane_website_agent:
                  :expected_update_period_in_days => 2,
                  :mode => :on_change,
                  :extract => {
-                     :title => {:css => "item title", :text => true},
-                     :url => {:css => "item link", :text => true}
+                     :title => {:css => "item title", :value => './/text()'},
+                     :url => {:css => "item link", :value => './/text()'}
                  }
                }.to_json.inspect %>
 
@@ -27,8 +27,8 @@ bob_website_agent:
                  :expected_update_period_in_days => 2,
                  :mode => :on_change,
                  :extract => {
-                   :url => {:css => "#comic img", :attr => "src"},
-                   :title => {:css => "#comic img", :attr => "title"}
+                   :url => {:css => "#comic img", :value => "@src"},
+                   :title => {:css => "#comic img", :value => "@title"}
                  }
                }.to_json.inspect %>
 
@@ -72,7 +72,7 @@ jane_rain_notifier_agent:
                    :value => "rain",
                    :path => "conditions"
                  }],
-                 :message => "Just so you know, it looks like '<conditions>' tomorrow in <location>"
+                 :message => "Just so you know, it looks like '{{conditions}}' tomorrow in {{location}}"
                }.to_json.inspect %>
 
 bob_rain_notifier_agent:
@@ -87,7 +87,7 @@ bob_rain_notifier_agent:
                    :value => "rain",
                    :path => "conditions"
                   }],
-                 :message => "Just so you know, it looks like '<conditions>' tomorrow in <location>"
+                 :message => "Just so you know, it looks like '{{conditions}}' tomorrow in {{location}}"
                }.to_json.inspect %>
 
 bob_twitter_user_agent:

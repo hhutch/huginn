@@ -11,19 +11,28 @@ gem 'bundler', '>= 1.5.0'
 
 gem 'protected_attributes', '~>1.0.8'
 
-gem 'rails' , '4.1.4'
+gem 'rails' , '4.1.5'
 
 case RUBY_PLATFORM
-when /freebsd/
-  # Seems FreeBSD's zoneinfo is not exactly what tzinfo expects
-  gem 'tzinfo-data'
-else
-  # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-  gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw]
+when /freebsd|netbsd|openbsd/
+  # ffi (required by typhoeus via ethon) merged fixes for bugs fatal
+  # on these platforms after 1.9.3; no following release as yet.
+  gem 'ffi', github: 'ffi/ffi', branch: 'master'
+
+  # tzinfo 1.2.0 has added support for reading zoneinfo on these
+  # platforms.
+  gem 'tzinfo', '>= 1.2.0'
+when /solaris/
+  # ditto
+  gem 'tzinfo', '>= 1.2.0'
 end
 
-# gem 'mysql2', '~> 0.3.16'
 gem 'pg'
+
+# Windows does not have zoneinfo files, so bundle the tzinfo-data gem.
+gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw]
+
+# gem 'mysql2', '~> 0.3.16'
 gem 'devise', '~> 3.2.4'
 gem 'kaminari', '~> 0.16.1'
 gem 'bootstrap-kaminari-views', '~> 0.0.3'
@@ -60,6 +69,7 @@ gem 'faraday', '~> 0.9.0'
 gem 'faraday_middleware'
 gem 'typhoeus', '~> 0.6.3'
 gem 'nokogiri', '~> 1.6.1'
+gem 'net-ftp-list', '~> 3.2.8'
 
 gem 'wunderground', '~> 1.2.0'
 gem 'forecast_io', '~> 2.0.0'
@@ -92,8 +102,9 @@ group :development, :test do
   gem 'vcr'
   gem 'dotenv-rails'
   gem 'pry'
-  gem 'rspec-rails', '~> 2.14'
-  gem 'rspec', '~> 2.14'
+  gem 'rspec-rails', '~> 2.99'
+  gem 'rspec', '~> 2.99'
+  gem 'rspec-collection_matchers'
   gem 'shoulda-matchers'
   gem 'rr'
   gem 'delorean'
