@@ -9,20 +9,20 @@
 "description" : "Huginn Production Environment",
 
 "default_attributes" : {
-  "mysql": {
-    "server_root_password": "password",
-    "server_repl_password": "",
-    "server_debian_password": ""
-  },
+    "postgresql": {
+        "password": {
+            "postgres": "password"
+        }
+    },
     "nginx" : {
-       "init_style" : "upstart"
+        "init_style" : "upstart"
     }
 },
 
 "run_list":[
              "recipe[git]",
              "recipe[apt]",
-             "recipe[mysql::server]",
+             "recipe[postgresql::server]",
              "recipe[nodejs::install_from_binary]",
              "recipe[nginx]",
              "recipe[huginn_production]"

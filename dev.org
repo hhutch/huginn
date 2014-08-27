@@ -1,0 +1,293 @@
+#+author: rhh
+#+title: working it out
+#+modified: <2014-08-20 Wed 10:50>
+* architecture
+** create agents story
+*** the listener for registering API events
+    a webhook agent
+    #+BEGIN_EXAMPLE
+    visit: http://localhost:3000/agents/new
+    type: webhookagent
+    name: <name>
+    options:
+      secret: <secret>
+      payload_path: <payload>
+    #+END_EXAMPLE
+    test
+    #+BEGIN_EXAMPLE
+     curl -i -H "Accept: application/json" -H "Content-type: application/json" -d '{"<payload>":{"name":"arpittest02"}}' -X POST http://<HOST>/users/<user_id>/web_requests/<numeric_id>/<secret>
+    #+END_EXAMPLE
+*** action agent for creating new agents
+    a custom agent to register agents based on event stream
+    #+BEGIN_SRC json
+      {"agent":
+       {"type": "fitbit",
+        "name": "barf",
+        "schedule": null,
+        "options": {
+            "consumer_key": "your-key",
+            "consumer_secret": "your-secret",
+            "oauth_token": "your-oauth-token",
+            "oauth_secret": "your-oauth-secret",
+            "uid": "fitbit user id"
+        }
+       }
+      }
+    #+END_SRC
+*** the data endpoint for fetching specific events
+    a data-hook agent
+    - example: give me all steps for the last week for user X
+    #+BEGIN_EXAMPLE
+    visit: http://localhost:3000/agents/new
+    type: DataOutputAgent
+    name: <name>
+    options:
+      secrets: Array[<secret>]
+      template: <JSON Template for data output>
+      Sources: List<<source>>
+    #+END_EXAMPLE
+* queries
+** generic query for reference
+   #+name: generic-query
+   #+header: :dbhost localhost
+   #+header: :dbuser luser
+   #+header: :dbpassword lpass
+   #+header: :dbname my_dev
+   #+header: :cmdline -d my_dev
+   #+BEGIN_SRC sql :engine postgresql
+     select * from events;
+   #+END_SRC
+
+** tables
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+    \dt
+    #+END_SRC
+   #+RESULTS:
+   | List of relations |                      |       |                   |
+   |-------------------+----------------------+-------+-------------------|
+   | Schema            | Name                 | Type  | Owner             |
+   | public            | agent_logs           | table | Hunter.Hutchinson |
+   | public            | agents               | table | Hunter.Hutchinson |
+   | public            | delayed_jobs         | table | Hunter.Hutchinson |
+   | public            | events               | table | Hunter.Hutchinson |
+   | public            | links                | table | Hunter.Hutchinson |
+   | public            | scenario_memberships | table | Hunter.Hutchinson |
+   | public            | scenarios            | table | Hunter.Hutchinson |
+   | public            | schema_migrations    | table | Hunter.Hutchinson |
+   | public            | user_credentials     | table | Hunter.Hutchinson |
+   | public            | users                | table | Hunter.Hutchinson |
+
+** describe events
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+     \d events
+   #+END_SRC
+   #+RESULTS:
+   | Table "public.events"                                                  |                             |                                                     |
+   |------------------------------------------------------------------------+-----------------------------+-----------------------------------------------------|
+   | Column                                                                 | Type                        | Modifiers                                           |
+   | id                                                                     | integer                     | not null default nextval('events_id_seq'::regclass) |
+   | user_id                                                                | integer                     |                                                     |
+   | agent_id                                                               | integer                     |                                                     |
+   | lat                                                                    | numeric(15,10)              |                                                     |
+   | lng                                                                    | numeric(15,10)              |                                                     |
+   | payload                                                                | json                        |                                                     |
+   | created_at                                                             | timestamp without time zone |                                                     |
+   | updated_at                                                             | timestamp without time zone |                                                     |
+   | expires_at                                                             | timestamp without time zone |                                                     |
+   | Indexes:                                                               |                             |                                                     |
+   | "events_pkey" PRIMARY KEY, btree (id)                                  |                             |                                                     |
+   | "index_events_on_agent_id_and_created_at" btree (agent_id, created_at) |                             |                                                     |
+   | "index_events_on_expires_at" btree (expires_at)                        |                             |                                                     |
+   | "index_events_on_user_id_and_created_at" btree (user_id, created_at)   |                             |                                                     |
+** describe agent_logs
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+    \d agent_logs
+    #+END_SRC
+   #+RESULTS:
+   | Table "public.agent_logs"                 |                             |                                                         |
+   |-------------------------------------------+-----------------------------+---------------------------------------------------------|
+   | Column                                    | Type                        | Modifiers                                               |
+   | id                                        | integer                     | not null default nextval('agent_logs_id_seq'::regclass) |
+   | agent_id                                  | integer                     | not null                                                |
+   | message                                   | text                        | not null                                                |
+   | level                                     | integer                     | not null default 3                                      |
+   | inbound_event_id                          | integer                     |                                                         |
+   | outbound_event_id                         | integer                     |                                                         |
+   | created_at                                | timestamp without time zone |                                                         |
+   | updated_at                                | timestamp without time zone |                                                         |
+   | Indexes:                                  |                             |                                                         |
+   | "agent_logs_pkey" PRIMARY KEY, btree (id) |                             |                                                         |
+
+** list events
+   #+name: event-query
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+     select * from events;
+   #+END_SRC
+
+   #+RESULTS: event-query
+   |  id | user_id | agent_id | lat | lng | payload                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | created_at                 | updated_at                 | expires_at |
+   |-----+---------+----------+-----+-----+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+----------------------------+------------|
+   | 887 |       1 |       12 |     |     | {"activites":[]}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 2014-08-08 16:57:36.544138 | 2014-08-08 16:57:36.544138 |            |
+   | 888 |       1 |       12 |     |     | {"activites":[]}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 2014-08-08 16:57:36.544138 | 2014-08-08 16:57:36.544138 |            |
+   | 896 |       1 |       12 |     |     | {"activities":[]}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | 2014-08-08 16:57:36.544138 | 2014-08-08 16:57:36.544138 |            |
+   | 899 |       1 |       12 |     |     | {"activities":[],"goals":{"activeMinutes":30,"caloriesOut":2184,"distance":5,"floors":10,"steps":10000},"summary":{"activeScore":-1,"activityCalories":523,"caloriesBMR":965,"caloriesOut":1377,"distances":[{"activity":"total","distance":2.06},{"activity":"tracker","distance":2.06},{"activity":"loggedActivities","distance":0},{"activity":"veryActive","distance":0.92},{"activity":"moderatelyActive","distance":0.85},{"activity":"lightlyActive","distance":0.29},{"activity":"sedentaryActive","distance":0}],"elevation":10,"fairlyActiveMinutes":37,"floors":1,"lightlyActiveMinutes":56,"marginalCalories":352,"sedentaryMinutes":677,"steps":4559,"veryActiveMinutes":19}}                                                                                         | 2014-08-08 16:57:36.544138 | 2014-08-08 16:57:36.544138 |            |
+   | 901 |       1 |       12 |     |     | {"activities":[],"goals":{"activeMinutes":30,"caloriesOut":2184,"distance":5,"floors":10,"steps":10000},"summary":{"activeScore":-1,"activityCalories":523,"caloriesBMR":976,"caloriesOut":1388,"distances":[{"activity":"total","distance":2.06},{"activity":"tracker","distance":2.06},{"activity":"loggedActivities","distance":0},{"activity":"veryActive","distance":0.92},{"activity":"moderatelyActive","distance":0.85},{"activity":"lightlyActive","distance":0.29},{"activity":"sedentaryActive","distance":0}],"elevation":10,"fairlyActiveMinutes":37,"floors":1,"lightlyActiveMinutes":56,"marginalCalories":352,"sedentaryMinutes":686,"steps":4559,"veryActiveMinutes":19}}                                                                                         | 2014-08-08 17:18:30.557255 | 2014-08-08 17:18:30.557255 |            |
+   | 902 |       1 |       12 |     |     | {"activities":[],"goals":{"activeMinutes":30,"caloriesOut":2184,"distance":5,"floors":10,"steps":10000},"summary":{"activeScore":-1,"activityCalories":523,"caloriesBMR":976,"caloriesOut":1388,"distances":[{"activity":"total","distance":2.06},{"activity":"tracker","distance":2.06},{"activity":"loggedActivities","distance":0},{"activity":"veryActive","distance":0.92},{"activity":"moderatelyActive","distance":0.85},{"activity":"lightlyActive","distance":0.29},{"activity":"sedentaryActive","distance":0}],"elevation":10,"fairlyActiveMinutes":37,"floors":1,"lightlyActiveMinutes":56,"marginalCalories":352,"sedentaryMinutes":686,"steps":4559,"veryActiveMinutes":19}}                                                                                         | 2014-08-08 17:18:40.815802 | 2014-08-08 17:18:40.815802 |            |
+   | 903 |       1 |       12 |     |     | { "summary": { "veryActiveMinutes": 19, "steps": 4559, "sedentaryMinutes": 687, "marginalCalories": 352, "lightlyActiveMinutes": 56, "floors": 1, "fairlyActiveMinutes": 37, "elevation": 10, "distances": [ { "distance": 2.06, "activity": "total" }, { "distance": 2.06, "activity": "tracker" }, { "distance": 0, "activity": "loggedActivities" }, { "distance": 0.92, "activity": "veryActive" }, { "distance": 0.85, "activity": "moderatelyActive" }, { "distance": 0.29, "activity": "lightlyActive" }, { "distance": 0, "activity": "sedentaryActive" } ], "caloriesOut": 1389, "caloriesBMR": 977, "activityCalories": 523, "activeScore": -1 }, "goals": { "steps": 10000, "floors": 10, "distance": 5, "caloriesOut": 2184, "activeMinutes": 30 }, "activities": [] } | 2014-08-08 17:19:01.052541 | 2014-08-08 17:19:01.052541 |            |
+   | 904 |       1 |       12 |     |     | { "summary": { "veryActiveMinutes": 19, "steps": 4592, "sedentaryMinutes": 681, "marginalCalories": 361, "lightlyActiveMinutes": 62, "floors": 1, "fairlyActiveMinutes": 37, "elevation": 10, "distances": [ { "distance": 2.07, "activity": "total" }, { "distance": 2.07, "activity": "tracker" }, { "distance": 0, "activity": "loggedActivities" }, { "distance": 0.92, "activity": "veryActive" }, { "distance": 0.85, "activity": "moderatelyActive" }, { "distance": 0.3, "activity": "lightlyActive" }, { "distance": 0, "activity": "sedentaryActive" } ], "caloriesOut": 1403, "caloriesBMR": 977, "activityCalories": 541, "activeScore": -1 }, "goals": { "steps": 10000, "floors": 10, "distance": 5, "caloriesOut": 2184, "activeMinutes": 30 }, "activities": [] }  | 2014-08-08 17:19:56.706319 | 2014-08-08 17:19:56.706319 |            |
+   #+TBLFM: 
+
+** test insert
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+     INSERT INTO events
+     ("agent_id", "created_at", "payload", "updated_at", "user_id")
+     VALUES (12,
+            '2014-08-08 16:57:36.544138',
+             '{"activities":[],"goals":{"activeMinutes":30,"caloriesOut":2184,"distance":5,"floors":10,"steps":10000},"summary":{"activeScore":-1,"activityCalories":523,"caloriesBMR":965,"caloriesOut":1377,"distances":[{"activity":"total","distance":2.06},{"activity":"tracker","distance":2.06},{"activity":"loggedActivities","distance":0},{"activity":"veryActive","distance":0.92},{"activity":"moderatelyActive","distance":0.85},{"activity":"lightlyActive","distance":0.29},{"activity":"sedentaryActive","distance":0}],"elevation":10,"fairlyActiveMinutes":37,"floors":1,"lightlyActiveMinutes":56,"marginalCalories":352,"sedentaryMinutes":677,"steps":4559,"veryActiveMinutes":19}}',
+             -- '{"activities":[]}',
+            '2014-08-08 16:57:36.544138',
+            1);
+   #+END_SRC
+
+   #+RESULTS:
+   | INSERT 0 1 |
+   |------------|
+
+   #+BEGIN_SRC sql
+     INSERT INTO "events"
+     ("agent_id"
+     "created_at"
+     "payload"
+     "updated_at"
+     "user_id")
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING "id"
+     [["agent_id", 12],
+     ["created_at", "2014-08-08 17:09:10.490140"],
+     ["payload", "{\"activities\":[],\"goals\":{\"activeMinutes\":30,\"caloriesOut\":2184,\"distance\":5,\"floors\":10,\"steps\":10000},\"summary\":{\"activeScore\":-1,\"activityCalories\":523,\"caloriesBMR\":965,\"caloriesOut\":1377,\"distances\":[{\"activity\":\"total\",\"distance\":2.06},{\"activity\":\"tracker\",\"distance\":2.06},{\"activity\":\"loggedActivities\",\"distance\":0},{\"activity\":\"veryActive\",\"distance\":0.92},{\"activity\":\"moderatelyActive\",\"distance\":0.85},{\"activity\":\"lightlyActive\",\"distance\":0.29},{\"activity\":\"sedentaryActive\",\"distance\":0}],\"elevation\":10,\"fairlyActiveMinutes\":37,\"floors\":1,\"lightlyActiveMinutes\":56,\"marginalCalories\":352,\"sedentaryMinutes\":677,\"steps\":4559,\"veryActiveMinutes\":19}}"],
+     ["updated_at", "2014-08-08 17:09:10.490140"],
+     ["user_id", 1]]
+   #+END_SRC
+** test json query
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+     select CAST(payload->'summary'->>'steps' AS INTEGER) AS steps from events WHERE CAST(payload->'summary'->>'steps' AS INTEGER) > 4800
+   #+END_SRC
+
+   #+RESULTS:
+   | steps |
+   |-------|
+   |  4876 |
+   |  4876 |
+   |  4876 |
+   |  4876 |
+   |  4876 |
+   |  4876 |
+   |  4896 |
+   |  4896 |
+   |  4896 |
+
+** list log entries
+   #+name: log-query
+   #+header: :cmdline -d huginn_development
+   #+BEGIN_SRC sql :engine postgresql
+     select * from delayed_jobs;
+   #+END_SRC
+
+   #+RESULTS: log-query
+   | id | priority | attempts | handler | last_error | run_at | locked_at | failed_at | locked_by | queue | created_at | updated_at |
+   |----+----------+----------+---------+------------+--------+-----------+-----------+-----------+-------+------------+------------|
+* deploy
+** huginn aws
+   follow instructions here for chef-solo
+   https://github.com/cantino/huginn/wiki/Deploying-huginn-on-any-server-or-virtualbox-using-chef-solo-and-or-vagrant
+
+   if you follow all the steps below, your knife invocation will look like
+   #+BEGIN_SRC sh
+     knife solo bootstrap ubuntu@verve-huginn -r role[huginn_production]
+   #+END_SRC
+*** Extra required before following instructions
+**** launch EC2 t2-medium HVM ubuntu 14.04 64bit instance
+     AMI: ubuntu-trusty-14.04-amd64-server-20140607.1 (ami-864d84ee)
+     use the `verve-huginn` security group
+     use the `verve-api` PEM keypair
+**** setup local alias in ssh
+     ~/.ssh/config
+     #+BEGIN_SRC sh
+       Host verve-huginn
+        HostName <IP FROM AWS CONSOLE>
+        User ubuntu
+        IdentityFile ~/.ssh/verve-api.pem
+     #+END_SRC
+**** install on server
+     #+BEGIN_SRC sh
+       sudo apt-get install ruby1.9.1-dev build-essential chef
+     #+END_SRC
+**** make life easier?
+     #+BEGIN_SRC sh
+       sudo apt-get install vim htop tmux
+     #+END_SRC
+*** customizing deployment for PG and our repo
+**** install ruby-shadow on target node
+     #+BEGIN_SRC sh
+       sudo gem install ruby-shadow
+     #+END_SRC
+**** even though chef does it, we need to install PosgreSQL first
+     #+BEGIN_SRC sh
+       sudo apt-get install postgresql
+     #+END_SRC
+**** must create a `root` user
+     login as `postgres` user and run psql
+     #+BEGIN_SRC sh
+       sudo su postgres
+       psql
+     #+END_SRC
+     in PSQL shell, run following commands
+     #+BEGIN_SRC sql
+       CREATE USER root WITH PASSWORD 'password';
+       ALTER USER root WITH SUPERUSER;
+     #+END_SRC
+**** must alter the pg_hba.conf so local users can access with PW
+     file: /etc/postgresql/9.3/main/pg_hba.conf
+     
+     the problem is that 9.3 by default has 'peer' set in ubuntu and values must be 'md5' for method
+     specifically it is the second line `local all all md5` that is important
+
+     #+BEGIN_SRC conf
+       # This file was automatically generated and dropped off by Chef!
+       
+       # PostgreSQL Client Authentication Configuration File
+       # ===================================================
+       #
+       # Refer to the "Client Authentication" section in the PostgreSQL
+       # documentation for a complete description of this file.
+       
+       # TYPE  DATABASE        USER            ADDRESS                 METHOD
+       
+       ###########
+       # Other authentication configurations taken from chef node defaults:
+       ###########
+       
+       local   all             postgres                                peer
+       
+       local   all             all                                     md5
+       
+       host    all             all             127.0.0.1/32            md5
+       
+       host    all             all             ::1/128                 md5
+       
+       # "local" is for Unix domain socket connections only
+       local   all             all                                     peer
+
+     #+END_SRC
+
+     don't forget to restart the service
+     #+BEGIN_SRC sh
+       sudo service postgresql restart
+     #+END_SRC
+***** NOTE: when knife/chef was run, the cookbook uploaded a new version of this file and I had to make these changes again!

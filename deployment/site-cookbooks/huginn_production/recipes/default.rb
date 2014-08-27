@@ -49,7 +49,8 @@ bash "Setting huginn user with NOPASSWD option" do
 end
 
 deploy "/home/huginn" do
-  repo "https://github.com/cantino/huginn.git"
+  # repo "https://github.com/cantino/huginn.git" # original
+  repo "https://github.com/hhutch/huginn.git" # ours
   branch "master"
   user "huginn"
   group "huginn"
