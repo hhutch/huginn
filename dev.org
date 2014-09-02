@@ -226,6 +226,9 @@
      #+END_SRC
 **** install on server
      #+BEGIN_SRC sh
+       # sudo add-apt-repository ppa:brightbox/ruby-ng
+       sudo apt-get update
+       # sudo apt-get install ruby2.1-dev build-essential chef
        sudo apt-get install ruby1.9.1-dev build-essential chef
      #+END_SRC
 **** make life easier?
@@ -233,9 +236,9 @@
        sudo apt-get install vim htop tmux
      #+END_SRC
 *** customizing deployment for PG and our repo
-**** install ruby-shadow on target node
+**** install ruby-shadow and yajl-ruby on target node
      #+BEGIN_SRC sh
-       sudo gem install ruby-shadow
+       sudo gem install ruby-shadow yajl-ruby foreman
      #+END_SRC
 **** even though chef does it, we need to install PosgreSQL first
      #+BEGIN_SRC sh
@@ -289,5 +292,10 @@
      don't forget to restart the service
      #+BEGIN_SRC sh
        sudo service postgresql restart
+     #+END_SRC
+
+     test with
+     #+BEGIN_SRC sh
+     psql -Uroot -dpostgres -W
      #+END_SRC
 ***** NOTE: when knife/chef was run, the cookbook uploaded a new version of this file and I had to make these changes again!

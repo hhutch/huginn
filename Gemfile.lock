@@ -52,10 +52,9 @@ GEM
       json
       trollop (~> 2)
       tzinfo
-    better_errors (2.0.0)
+    better_errors (1.1.0)
       coderay (>= 1.0.0)
       erubis (>= 2.6.6)
-      rack (>= 0.9.0)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     bootstrap-kaminari-views (0.0.3)
@@ -71,7 +70,7 @@ GEM
     coffee-script (2.3.0)
       coffee-script-source
       execjs
-    coffee-script-source (1.7.1)
+    coffee-script-source (1.8.0)
     cookiejar (0.3.2)
     coveralls (0.7.1)
       multi_json (~> 1.3)
@@ -166,7 +165,7 @@ GEM
       json (~> 1.8)
       multi_xml (>= 0.5.2)
     i18n (0.6.11)
-    jquery-rails (3.1.1)
+    jquery-rails (3.1.2)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
     json (1.8.1)
@@ -176,7 +175,6 @@ GEM
     kaminari (0.16.1)
       actionpack (>= 3.0.0)
       activesupport (>= 3.0.0)
-    kgio (2.9.2)
     kramdown (1.3.3)
     launchy (2.4.2)
       addressable (~> 2.3)
@@ -192,8 +190,8 @@ GEM
     method_source (0.8.2)
     mime-types (1.25.1)
     mini_portile (0.6.0)
-    minitest (5.4.0)
-    mqtt (0.2.0)
+    minitest (5.4.1)
+    mqtt (0.3.0)
     multi_json (1.10.1)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
@@ -211,7 +209,7 @@ GEM
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
-    omniauth-fitbit (1.0.3)
+    omniauth-fitbit (1.0.4)
       multi_xml
       omniauth-oauth (~> 1.0)
     omniauth-oauth (1.0.1)
@@ -241,17 +239,11 @@ GEM
       bundler (>= 1.3.0, < 2.0)
       railties (= 4.1.5)
       sprockets-rails (~> 2.0)
-    rails_12factor (0.0.2)
-      rails_serve_static_assets
-      rails_stdout_logging
-    rails_serve_static_assets (0.0.2)
-    rails_stdout_logging (0.0.3)
     railties (4.1.5)
       actionpack (= 4.1.5)
       activesupport (= 4.1.5)
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
-    raindrops (0.13.0)
     rake (10.3.2)
     rdoc (4.1.1)
       json (~> 1.4)
@@ -286,7 +278,7 @@ GEM
       rest-client
     ruby-growl (4.1)
       uuid (~> 2.3, >= 2.3.5)
-    rufus-scheduler (3.0.8)
+    rufus-scheduler (3.0.9)
       tzinfo
     safe_yaml (1.0.3)
     sass (3.2.19)
@@ -318,7 +310,7 @@ GEM
       multi_json (~> 1.0)
       rack (~> 1.0)
       tilt (~> 1.1, != 1.3.0)
-    sprockets-rails (2.1.3)
+    sprockets-rails (2.1.4)
       actionpack (>= 3.0)
       activesupport (>= 3.0)
       sprockets (~> 2.8)
@@ -358,10 +350,6 @@ GEM
     uglifier (2.5.3)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
-    unicorn (4.8.3)
-      kgio (~> 2.6)
-      rack
-      raindrops (~> 0.7)
     uuid (2.3.7)
       macaddr (~> 1.0)
     uuidtools (2.1.5)
@@ -388,7 +376,7 @@ PLATFORMS
 DEPENDENCIES
   ace-rails-ap (~> 2.0.1)
   beeminder
-  better_errors
+  better_errors (~> 1.1.0)
   binding_of_caller
   bootstrap-kaminari-views (~> 0.0.3)
   bundler (>= 1.5.0)
@@ -429,7 +417,6 @@ DEPENDENCIES
   quiet_assets
   rack
   rails (= 4.1.5)
-  rails_12factor
   rr
   rspec (~> 2.99)
   rspec-collection_matchers
@@ -447,7 +434,6 @@ DEPENDENCIES
   typhoeus (~> 0.6.3)
   tzinfo-data
   uglifier (>= 1.3.0)
-  unicorn
   vcr
   webmock (~> 1.17.4)
   weibo_2 (~> 0.1.4)
