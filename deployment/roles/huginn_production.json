@@ -1,30 +1,41 @@
 {
 
-"name" : "huginn_production",
+    "name" : "huginn_production",
 
-"chef_type" : "role",
+    "chef_type" : "role",
 
-"json_class" : "Chef::Role",
+    "json_class" : "Chef::Role",
 
-"description" : "Huginn Production Environment",
+    "description" : "Huginn Production Environment",
 
-"default_attributes" : {
-    "postgresql": {
-        "password": {
-            "postgres": "password"
+    "default_attributes" : {
+        "postgresql": {
+            "password": {
+                "postgres": "password"
+            }
+        },
+        "nginx" : {
+            "init_style" : "upstart"
         }
     },
-    "nginx" : {
-        "init_style" : "upstart"
-    }
-},
 
-"run_list":[
-             "recipe[git]",
-             "recipe[apt]",
-             "recipe[postgresql::server]",
-             "recipe[nodejs::install_from_binary]",
-             "recipe[nginx]",
-             "recipe[huginn_production]"
-           ]
+    "override_attributes" : {
+        "postgresql": {
+            "pg_hba": [
+                {"type": "local", "db": "all", "user": "postgres", "addr": null, "method": "ident"},
+                {"type": "local", "db": "all", "user": "all", "addr": null, "method": "md5"},
+                {"type": "host", "db": "all", "user": "all", "addr": "127.0.0.1/32", "method": "md5"},
+                {"type": "host", "db": "all", "user": "all", "addr": "::1/128", "method": "md5"}
+            ]
+        }
+    },
+    
+    "run_list":[
+        "recipe[git]",
+        "recipe[apt]",
+        "recipe[postgresql::server]",
+        "recipe[nodejs::install_from_binary]",
+        "recipe[nginx]",
+        "recipe[huginn_production]"
+    ]
 }

@@ -259,6 +259,7 @@
      file: /etc/postgresql/9.3/main/pg_hba.conf
      
      the problem is that 9.3 by default has 'peer' set in ubuntu and values must be 'md5' for method
+
      specifically it is the second line `local all all md5` that is important
 
      #+BEGIN_SRC conf
@@ -296,6 +297,6 @@
 
      test with
      #+BEGIN_SRC sh
-     psql -Uroot -dpostgres -W
+       psql -Uroot -dpostgres -W
      #+END_SRC
-***** NOTE: when knife/chef was run, the cookbook uploaded a new version of this file and I had to make these changes again!
+***** NOTE: when knife/chef is run, the cookbook uploades a new version of this file based on the production knife role attributes.  This should still be correct and works in my tests.
