@@ -43,7 +43,7 @@ module Agents
       built_agent = nil
       
       agent_list.each { |req_a|
-        ex_a = Agent.where({:user_id => user, :type => "Agents::#{req_a["type"]}"}).first
+        ex_a = Agent.where({:name => req_a["name"], :type => "Agents::#{req_a["type"]}"}).first
         if ex_a.nil?
           # create new agent
           agent_args = {:name => req_a["name"], :options => req_a["options"]}
