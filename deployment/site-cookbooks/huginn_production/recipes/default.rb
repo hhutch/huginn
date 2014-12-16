@@ -48,6 +48,18 @@ bash "Setting huginn user with NOPASSWD option" do
   EOH
 end
 
+bash "Install New Relic monitor" do
+  cwd "/tmp"
+  code <<-EOH
+    echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list.d/newrelic.list
+    wget -O- https://download.newrelic.com/548C16BF.gpg | apt-key add -
+    apt-get update
+    apt-get install newrelic-sysmond
+    nrsysmond-config --set license_key=da3f1c945581a8a945ec89d78c21b1bd1f6f4e93
+    /etc/init.d/newrelic-sysmond start
+  EOH
+end
+
 deploy "/home/huginn" do
   # repo "https://github.com/cantino/huginn.git" # original
   repo "https://github.com/hhutch/huginn.git" # ours
@@ -105,6 +117,7 @@ deploy "/home/huginn" do
       sudo RAILS_ENV=production bundle exec rake db:seed
       sudo RAILS_ENV=production bundle exec rake assets:precompile
       sudo foreman export upstart /etc/init -a huginn -u huginn -l log
+      sudo stop huginn
       sudo start huginn
       EOH
     end
